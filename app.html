@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rinkmath - backyard rink truth-teller</title>
+<style>
+:root{--bg:#0d1117;--card:#141b24;--ink:#e8eef5;--mut:#93a3b5;--amber:#8ecdf0;--line:#24313f;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:26px 14px 60px}
+main{max-width:880px;margin:0 auto}
+a.back{color:var(--mut);text-decoration:none;font-size:14px}
+h1{font-size:30px;margin:6px 0 2px}h1 span{color:var(--amber)}
+.sub{color:var(--mut);margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:19px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+label{display:block;color:var(--mut);font-size:13px;margin-bottom:4px}
+input,select{width:100%;background:#0f141b;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 10px;font-size:16px}
+button.ghost{background:#1a2531;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;margin:10px 6px 0 0}
+button.ghost:hover{border-color:var(--amber)}
+.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-top:12px}
+.vc{background:#0f141b;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.vc .k{color:var(--mut);font-size:12px;letter-spacing:1px}
+.vc .n{font-size:24px;font-weight:700;margin:4px 0}
+.vc .h{color:var(--mut);font-size:13px}
+.vc.ok .n{color:var(--ok)}.vc.warn .n{color:var(--warn)}.vc.bad .n{color:var(--bad)}
+.note{color:var(--mut);font-size:13px;margin-top:10px}
+.err{display:none;background:#3a1220;border:1px solid var(--bad);color:#fecaca;border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.warnbox{background:#2a2113;border:1px solid var(--warn);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:14px;color:#fde9c0}
+#cross{width:100%;display:block;margin:14px auto 0}
+.forecast{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.forecast div{flex:1;min-width:60px}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">&larr; Rinkmath</a>
+<h1>Rink<span>math</span></h1>
+<p class="sub">Water finds level. Your boards and liner had better know it. Everything updates live.</p>
+
+<div class="err" id="err"></div>
+
+<div class="card">
+<h2>1. The rink</h2>
+<div class="grid">
+<div><label>Length (ft)</label><input id="len" type="number" step="any" value="40"></div>
+<div><label>Width (ft)</label><input id="wid" type="number" step="any" value="20"></div>
+<div><label>Shallow-end depth (in)</label><input id="depth" type="number" step="any" value="4"></div>
+<div><label>Yard slope (in across length)</label><input id="slope" type="number" step="any" value="2"></div>
+<div><label>Board height (in)</label><select id="boardh"><option value="8">8 in (2x8)</option><option value="12" selected>12 in (2x12)</option><option value="16">16 in</option></select></div>
+<div><label>Board length (ft)</label><select id="boardlen"><option value="8">8 ft</option><option value="10">10 ft</option><option value="12" selected>12 ft</option><option value="16">16 ft</option></select></div>
+</div>
+<p class="note">Measure the slope: string a level line from the high corner to the low corner. A 2-inch drop across 40 feet is a yard that looks flat.</p>
+</div>
+
+<div class="card">
+<h2>2. The slope truth</h2>
+<div class="verdicts">
+<div class="vc warn"><div class="k">DEEP-END DEPTH</div><div class="n" id="vMax">-</div><div class="h" id="vMaxH">shallow + slope, water finds level</div></div>
+<div class="vc"><div class="k">WATER NEEDED</div><div class="n" id="vGal">-</div><div class="h" id="vGalH">average depth x area</div></div>
+<div class="vc"><div class="k">FILL TIME</div><div class="n" id="vFill">-</div><div class="h">at 5 gpm, a typical garden hose</div></div>
+</div>
+<div id="slopewarn"></div>
+<svg id="cross" viewBox="0 0 860 200" role="img" aria-label="Rink cross-section with slope"></svg>
+</div>
+
+<div class="card">
+<h2>3. Materials</h2>
+<div class="verdicts">
+<div class="vc ok"><div class="k">LINER</div><div class="n" id="vLiner">-</div><div class="h" id="vLinerH">rink + boards + 18 in overlap each side</div></div>
+<div class="vc"><div class="k">BOARDS</div><div class="n" id="vBoards">-</div><div class="h" id="vBoardsH">perimeter at your board length</div></div>
+<div class="vc"><div class="k">STAKES</div><div class="n" id="vStakes">-</div><div class="h">every ~4 ft, rule of thumb</div></div>
+<div class="vc"><div class="k">EST. COST</div><div class="n" id="vCost">-</div><div class="h" id="vCostH">liner $0.25/sqft + water $10/1000 gal, typical</div></div>
+</div>
+</div>
+
+<div class="card">
+<h2>4. The freeze</h2>
+<label>Forecast daily average temps for the next 7 days (&deg;F)</label>
+<div class="forecast" id="forecast"></div>
+<div class="verdicts">
+<div class="vc ok"><div class="k">ICE GROWTH</div><div class="n" id="vIce">-</div><div class="h">1 inch per 15 freezing degree-days, rule of thumb</div></div>
+<div class="vc"><div class="k">TARGET 2.5 IN</div><div class="n" id="vDays">-</div><div class="h" id="vDaysH">when the model says the sheet is ready to skate</div></div>
+<div class="vc"><div class="k">RESURFACE FLOOD</div><div class="n" id="vFlood">-</div><div class="h">a 1/8 in hot-water layer, each flood</div></div>
+<div class="vc"><div class="k">SKATER CAPACITY</div><div class="n" id="vCap">-</div><div class="h">~50 sq ft per skater, rink-design rule of thumb</div></div>
+</div>
+<p class="note"><b>Ice safety is yours, not this app's.</b> The freeze model is a rough planning estimate - clear ice, cloudy ice and slush grow at different rates. Check the sheet in several spots before anyone skates, and never rely on an estimate over your own measurement.</p>
+</div>
+
+</main>
+<script src="engine.js?v=1"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fcast = $('forecast');
+const DEFAULT_TEMPS = [20, 18, 24, 28, 22, 15, 19];
+DEFAULT_TEMPS.forEach((t, i) => {
+  const d = document.createElement('div');
+  d.innerHTML = `<label>Day ${i+1}</label><input id="fc${i}" type="number" step="any" value="${t}">`;
+  fcast.appendChild(d);
+});
+function drawCross(L, minD, maxD, boardH) {
+  const svg = $('cross');
+  const W = 860, y0 = 170, x0 = 90, x1 = 770;
+  const scale = (y1, y0v) => {}; // depth scale: map inches to px
+  const maxIn = Math.max(maxD, boardH) * 1.25;
+  const Y = inches => y0 - inches / maxIn * 130;
+  const shallowY = Y(minD), deepY = Y(maxD), boardY = Y(boardH);
+  const esc = s => String(s).replace(/</g,'&lt;');
+  svg.innerHTML = `
+    <polygon points="${x0},${shallowY} ${x1},${deepY} ${x1},${y0} ${x0},${y0}" fill="#1d3a52" opacity="0.85"/>
+    <line x1="${x0}" y1="${shallowY}" x2="${x1}" y2="${deepY}" stroke="#8ecdf0" stroke-width="3"/>
+    <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="#24313f" stroke-width="4"/>
+    <line x1="${x0}" y1="${boardY}" x2="${x0}" y2="${y0}" stroke="#f0b45a" stroke-width="6"/>
+    <line x1="${x1}" y1="${boardY}" x2="${x1}" y2="${y0}" stroke="#f0b45a" stroke-width="6"/>
+    <text x="${x0+8}" y="${shallowY-8}" fill="#8ecdf0" font-size="13">shallow end ${esc(minD.toFixed(1))} in</text>
+    <text x="${x1-8}" y="${deepY-8}" fill="#8ecdf0" font-size="13" text-anchor="end">deep end ${esc(maxD.toFixed(1))} in</text>
+    <text x="${x0-8}" y="${(boardY+y0)/2}" fill="#f0b45a" font-size="13" text-anchor="end" transform="rotate(-90 ${x0-12} ${(boardY+y0)/2})">boards ${esc(boardH)} in</text>
+    <text x="${(x0+x1)/2}" y="${y0+24}" fill="#93a3b5" font-size="12" text-anchor="middle">${esc(L)} ft across - water level, ground sloped</text>`;
+}
+function calc() {
+  const err = $('err');
+  const L = +$('len').value, W = +$('wid').value, d = +$('depth').value, s = +$('slope').value;
+  const bh = +$('boardh').value, bl = +$('boardlen').value;
+  const temps = DEFAULT_TEMPS.map((_, i) => +$(('fc'+i)).value);
+  if (!isFinite(L) || !isFinite(W) || L < 4 || W < 4 || L > 200 || W > 200 ||
+      !isFinite(d) || d < 1 || d > 24 || !isFinite(s) || s < 0 || s > 48 ||
+      temps.some(t => !isFinite(t) || t < -40 || t > 80)) {
+    err.style.display = 'block';
+    err.textContent = 'Check the numbers: rink 4-200 ft, depth 1-24 in, slope 0-48 in, temps -40 to 80 F.';
+    return;
+  }
+  err.style.display = 'none';
+  const b = Rink.build({ lengthFt: L, widthFt: W, minDepthIn: d, slopeIn: s, boardHeightIn: bh,
+                         boardLenFt: bl, dailyAvgF: temps, targetIn: 2.5 });
+  $('vMax').textContent = Rink.fmt(b.depths.maxDepth) + ' in';
+  $('vMaxH').textContent = b.depths.maxDepth > bh
+    ? 'over your ' + bh + ' in boards - it will spill'
+    : 'inside your ' + bh + ' in boards with ' + Rink.fmt(bh - b.depths.maxDepth) + ' in to spare';
+  $('vGal').textContent = Math.round(b.gallons).toLocaleString() + ' gal';
+  $('vGalH').textContent = Math.round(b.liters).toLocaleString() + ' liters, average ' + Rink.fmt(b.depths.avgDepth) + ' in deep';
+  $('vFill').textContent = Rink.fmt(b.fillHours, 1) + ' h';
+  const sw = $('slopewarn');
+  if (b.depths.maxDepth > bh) sw.innerHTML = '<div class="warnbox">The deep end needs <b>' + Rink.fmt(b.depths.maxDepth) + ' in</b> of water but your boards are ' + bh + ' in - water runs out the low corner before the shallow end fills. Raise the low-end boards to at least ' + Math.ceil(b.depths.maxDepth) + ' in or regrade.</div>';
+  else if (s >= 4) sw.innerHTML = '<div class="warnbox">That slope is the classic rink-killer: the deep end holds <b>' + Rink.fmt(b.depths.maxDepth) + ' in</b> against a shallow end of ' + Rink.fmt(d) + ' in. The liner and boards at the low corner carry it all.</div>';
+  else sw.innerHTML = '';
+  $('vLiner').textContent = Rink.fmt(b.liner.length, 0) + ' x ' + Rink.fmt(b.liner.width, 0) + ' ft';
+  $('vLinerH').textContent = Math.round(b.liner.area).toLocaleString() + ' sq ft with overlap';
+  $('vBoards').textContent = b.boards.count + ' x ' + bl + ' ft';
+  $('vBoardsH').textContent = Math.round(b.perimeter) + ' ft perimeter';
+  $('vStakes').textContent = b.boards.stakes;
+  $('vCost').textContent = '$' + Math.round(b.cost.linerUsd + b.cost.waterUsd);
+  $('vCostH').textContent = '$' + Math.round(b.cost.linerUsd) + ' liner + $' + Rink.fmt(b.cost.waterUsd, 2) + ' water';
+  $('vIce').textContent = Rink.fmt(b.freeze.totalInches) + ' in';
+  $('vDays').textContent = b.freeze.daysToTarget === null ? 'not in 7d' : 'day ' + b.freeze.daysToTarget;
+  $('vDaysH').textContent = b.freeze.daysToTarget === null ? 'too warm this week in the model' : 'by the 15 FDD-per-inch rule of thumb';
+  $('vFlood').textContent = Math.round(b.floodGallons) + ' gal';
+  $('vCap').textContent = b.capacity + ' skaters';
+  drawCross(L, b.depths.minDepth, b.depths.maxDepth, bh);
+}
+['len','wid','depth','slope','boardh','boardlen'].forEach(id => $(id).addEventListener('input', calc));
+DEFAULT_TEMPS.forEach((_, i) => $('fc'+i).addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
